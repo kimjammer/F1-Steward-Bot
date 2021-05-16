@@ -20,20 +20,13 @@ module.exports = {
         let guild_nitro_info = `Nitro Level: ${crr_guild.premiumTier}
         Boosts:  ${crr_guild.premiumSubscriptionCount}`
 
-        let guild_members_info = `All Members: ${crr_guild.memberCount}
-        ${client.emojis.cache.get("745043815232045117")} - ${crr_guild.members.cache.filter(user => user.presence.status == "online").size}
-        ${client.emojis.cache.get("745043815064141935")} - ${crr_guild.members.cache.filter(user => user.presence.status == "offline").size}
-        ${client.emojis.cache.get("745043815282245704")} - ${crr_guild.members.cache.filter(user => user.presence.status == "idle").size}
-        ${client.emojis.cache.get("745043815416725675")} - ${crr_guild.members.cache.filter(user => user.presence.status == "dnd").size}`
-
         const embed = new client.MessageEmbed() //this is Discord.MessageEmbed but put into client for easy access
-            .setAuthor('Diri','https://kimjammer.github.io/Portfolio/img/Diri.png','https://diri-robot.web.app/')
+            .setAuthor('F1 Steward','https://kimjammer.github.io/Portfolio/img/f1StewardLogo.png')
             .setColor(0x003ea1)
             .setTitle(`Information about ${crr_guild}`)
             .addField("General Info", guild_general_info, false)
             .addField("Channel Count", guild_channels_info, false)
             .addField("Nitro Info", guild_nitro_info, false)
-            .addField("Member Info", guild_members_info, false)
             .setFooter(`Information fetched on: ${date_obj.toDateString()}`,crr_guild.iconURL())
             .setThumbnail(crr_guild.iconURL())
 

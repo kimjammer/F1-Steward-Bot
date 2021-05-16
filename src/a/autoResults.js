@@ -3,7 +3,7 @@ module.exports = {
 	description: 'Sets the channel to post automatic results in',
 	usage: `<autoResults [set,remove]`,
 	category: "general",
-	guildOnly: false,
+	guildOnly: true,
 	async execute(message,args,client) {
 		let rawdbData = client.fs.readFileSync(client.dblocation);
 		let dbData = JSON.parse(rawdbData);
@@ -28,7 +28,7 @@ module.exports = {
 				message.channel.send(`This channel, <#${dbData.servers[`${message.guild.id}`]}>, will no longer receive race results!`);
 			});
 		}else {
-			message.channel.send("That's not a valid argument, please add 'set' to make this channel get automatic results or 'remove' to stop getting automatic results.");
+			message.channel.send("That's not a valid argument, please say \`<autoResults set\` to make this channel get automatic results or \`<autoResults remove\` to stop getting automatic results.");
 			return;
 		}
 	}
@@ -43,8 +43,8 @@ const exampleDataBase = {
 		},
 	"cache":
 		{
-			"lastRace":[2021,4]
-			"lastQualifying": [2021,4]
+			"lastRace":[2021,4] //This is Race season 2021, round(aka race) 4
+			"lastQualifying": [2021,4,3] //[Race Season, round, Qualifying Number (Q1,Q2,Q3)]
 		}
 }
 */

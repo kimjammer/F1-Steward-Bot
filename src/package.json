@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "discord.js": "^12.5.1",
-    "request": "^2.88.2",
-    "systime": "^1.0.0"
+    "systime": "^1.0.0",
+    "tiny-json-http": "^7.3.0"
   },
   "keywords": [
     "Bot"

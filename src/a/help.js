@@ -38,7 +38,7 @@ module.exports = {
 			})
 
 			const helpEmbed = new client.MessageEmbed()
-				.setAuthor('Diri','https://kimjammer.github.io/Portfolio/img/Diri.png','https://diri-robot.web.app/')
+				.setAuthor('F1 Steward','https://kimjammer.github.io/Portfolio/img/f1StewardLogo.png')
 				.setColor(0x03fc30)
 				.setTitle(`Help Menu`)
 				.addField("General Commands:", "Press :regional_indicator_g:", false)
@@ -105,7 +105,7 @@ module.exports = {
 
 				//Create new embed with information about the requested command
 				const commandEmbed = new client.MessageEmbed()
-					.setAuthor('Diri','https://kimjammer.github.io/Portfolio/img/Diri.png','https://diri-robot.web.app/')
+					.setAuthor('F1 Steward','https://kimjammer.github.io/Portfolio/img/f1StewardLogo.png')
 					.setColor(0x03fc30)
 					.setTitle(client.commands.get(args[0]).name)
 					.addField(`Description:`, client.commands.get(args[0]).description, false)

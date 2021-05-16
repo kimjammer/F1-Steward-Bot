@@ -42,14 +42,14 @@ module.exports = {
         Uptime: ${msToHumanReadable(client.uptime)}`
 
         const embed = new client.MessageEmbed() //this is Discord.MessageEmbed but put into client for easy access
-            .setAuthor('F1 Steward','https://kimjammer.github.io/Portfolio/img/Diri.png')
+            .setAuthor('F1 Steward','https://kimjammer.github.io/Portfolio/img/f1StewardLogo.png')
             .setColor(0x003ea1)
             .setTitle(`Statistics about F1 Steward Bot`)
             .addField("General Info", stats_general_info, false)
             .addField("Usage Info", stats_usage_info, false)
             .addField("Software & Hardware Info", stats_softwareHardware_info, false)
             .setFooter(`Information fetched on: ${date_obj.toDateString()}`)
-            .setThumbnail("https://kimjammer.github.io/Portfolio/img/Diri.png")
+            .setThumbnail("https://kimjammer.github.io/Portfolio/img/f1StewardLogo.png")
 
         message.channel.send(embed);
     }
