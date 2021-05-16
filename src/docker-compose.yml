@@ -1,0 +1,9 @@
+version: "3.8"
+
+services:
+  f1bot:
+    build: .
+    volumes:
+      - type: bind
+        source: ../databases
+        target: /dbs/f1bot
