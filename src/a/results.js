@@ -108,10 +108,8 @@ module.exports = {
 				.setFooter(`Information provided by Ergast`)
 				.setThumbnail("")
 
-			//Now send the information to all channels that have autoResults
-			for (const server in dbData.servers) {
-				client.channels.cache.get(dbData.servers[`${server}`]).send(raceEmbed);
-			}
+			//Now send the information
+			message.channel.send(raceEmbed);
 		});
 	}
 };

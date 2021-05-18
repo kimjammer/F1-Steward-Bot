@@ -28,7 +28,7 @@ module.exports = {
 				message.channel.send(`This channel, <#${dbData.servers[`${message.guild.id}`]}>, will no longer receive race results!`);
 			});
 		}else {
-			message.channel.send("That's not a valid argument, please say \`<autoResults set\` to make this channel get automatic results or \`<autoResults remove\` to stop getting automatic results.");
+			message.channel.send("Please say \`<autoResults set\` to make this channel get automatic results or \`<autoResults remove\` to stop getting automatic results.");
 			return;
 		}
 	}
