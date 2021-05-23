@@ -121,7 +121,7 @@ function checkNewRaceResults () {
 			if (response.Results[i].positionText == "R") {
 				//Say driver has retired instead of giving place number
 				resultsRow += `Retired. `;
-			}if (response.Results[i].positionText == "W") {
+			}else if (response.Results[i].positionText == "W") {
 				//Say driver has retired instead of giving place number
 				resultsRow += `Withdrawn. `;
 			}else if (response.Results[i].positionText == "N") {
