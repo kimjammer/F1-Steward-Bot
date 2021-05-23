@@ -115,12 +115,15 @@ function checkNewRaceResults () {
 		//Construct block of text that has all drivers and their times in rows.
 		let resultsText = ``;
 		let resultsRow = ``;
-		for (let i = 0;i<20;i++) {
+		for (let i = 0;i<response.Results.length;i++) {
 			resultsRow = ``;
 			//Check if current driver has a ending place or has retired. Then add their place to the string.
 			if (response.Results[i].positionText == "R") {
 				//Say driver has retired instead of giving place number
 				resultsRow += `Retired. `;
+			}if (response.Results[i].positionText == "W") {
+				//Say driver has retired instead of giving place number
+				resultsRow += `Withdrawn. `;
 			}else if (response.Results[i].positionText == "N") {
 				resultsRow += `Not Classifed. `
 			}else{
@@ -179,28 +182,31 @@ function checkNewRaceResults () {
 }
 
 function checkNewQualsResults () {
-	let url = "http://ergast.com/api/f1/current/last/qualifying.json";
+	//Get Currently displayed race season & round
+	let rawdbData = client.fs.readFileSync(client.dblocation);
+	let dbData = JSON.parse(rawdbData);
+
+	//I can't use /last/qualifying because that updates when the actual race happens. Instead, I check for the next round
+	//manually.
+	let url = `http://ergast.com/api/f1/current/${parseInt(dbData.cache.lastQualifying[1],10)+1}/qualifying.json`;
 
 	tiny.get({url}, function (error, rawResponse) {
 		if (error) throw new Error(error);
 
 		//Response here
-		//Get Currently displayed race season & round
-		let rawdbData = client.fs.readFileSync(client.dblocation);
-		let dbData = JSON.parse(rawdbData);
-
 		let response = rawResponse.body.MRData.RaceTable
 
 		//Get the latest Qualifying round completed.
 		let lastQualifying = 0;
-		//This checks the Q1 time of the first place driver. If there is no value, then Q1 has not been completed
-		if (!response.Races[0].QualifyingResults[0]['Q1']) {
-			//This state should never be reached, as the database updates when there is a value for Q1.
-			console.log('How did the database update without having Q1 information?')
-		}else if (!response.Races[0].QualifyingResults[0]['Q2']) {
+		//This checks the time of the first place driver. If there is a value, then the that round was completed
+		//If there is nothing in the races array, Q1 has not completed yet.
+		if (response.Races.length == 0) {
+			//There is no Data for this Qualifiers yet. (Qualifiers has not gone yet.)
+			return;
+		}else if (response.Races[0].QualifyingResults[0]['Q1'] && !response.Races[0].QualifyingResults[0]['Q2']) {
 			//There is Data for up to Q1
 			lastQualifying = 1;
-		}else if (!response.Races[0].QualifyingResults[0]['Q2']) {
+		}else if (response.Races[0].QualifyingResults[0]['Q2'] && !response.Races[0].QualifyingResults[0]['Q3']) {
 			//There is Data for up to Q2
 			lastQualifying = 2;
 		}else if (response.Races[0].QualifyingResults[0]['Q3']) {
@@ -222,74 +228,80 @@ function checkNewQualsResults () {
 		//Narrow down definition of response so that it is only the specific race information
 		response = response.Races[0];
 
-		//Construct block of text that has all drivers and their times in rows.
-		let resultsText = ``;
-		let resultsRow = ``;
-		for (let i = 0;i<20;i++) {
-			resultsRow = ``;
+		//If there is more info than the bot has posted so far, go through and post them all.
+		let postedQualifying = 0
+		while (lastQualifying > postedQualifying) {
+			postedQualifying++;
 
-			//If writing results for 1st, 2nd, or 3rd, don't use -th ending.
-			if (i == 0) {
-				resultsRow += `1st. `
-			}else if (i == 1) {
-				resultsRow += `2nd. `
-			} else if (i == 2) {
-				resultsRow += `3rd. `
-			}else {
-				resultsRow += `${response.QualifyingResults[i][`position`]}th. `
+			//Construct block of text that has all drivers and their times in rows.
+			let resultsText = ``;
+			let resultsRow = ``;
+			for (let i = 0;i<response.QualifyingResults.length;i++) {
+				resultsRow = ``;
+
+				//If writing results for 1st, 2nd, or 3rd, don't use -th ending.
+				if (i == 0) {
+					resultsRow += `1st. `
+				}else if (i == 1) {
+					resultsRow += `2nd. `
+				} else if (i == 2) {
+					resultsRow += `3rd. `
+				}else {
+					resultsRow += `${response.QualifyingResults[i][`position`]}th. `
+				}
+
+
+				//Next, add driver's name
+				resultsRow += `${response.QualifyingResults[i].Driver.givenName} ${response.QualifyingResults[i].Driver.familyName} `
+
+				//Now, get the number of characters that are in the in the string, and subtract it from 30 to get number of spaces to add
+				let numSpacesNeeded = 30 - resultsRow.length;
+				//Now add the number of spaces needed.
+				for (numSpacesNeeded;numSpacesNeeded > 0;numSpacesNeeded--) {
+					resultsRow += ` `; //Add a single space
+				}
+
+				//Finally, their time statistics
+				if (postedQualifying == 1) {
+					//Check if the driver did this Qualifying round
+					if (response.QualifyingResults[i]['Q1']) {
+						resultsRow += `${response.QualifyingResults[i]['Q1']}`;
+					}else {
+						resultsRow += `N/A`
+					}
+				}else if (postedQualifying == 2) {
+					//Check if the driver did this Qualifying round
+					if (response.QualifyingResults[i]['Q2']) {
+						resultsRow += `${response.QualifyingResults[i]['Q2']}`;
+					}else {
+						resultsRow += `N/A`
+					}
+				}else if (postedQualifying == 3) {
+					//Check if the driver did this Qualifying round
+					if (response.QualifyingResults[i]['Q3']) {
+						resultsRow += `${response.QualifyingResults[i]['Q3']}`;
+					}else {
+						resultsRow += `N/A`
+					}
+				}
+
+				//Add this row to results text, and repeat
+				resultsText += resultsRow + `\n`;
 			}
 
+			let raceEmbed = new Discord.MessageEmbed()
+				.setAuthor('F1 Steward','https://kimjammer.github.io/Portfolio/img/f1StewardLogo.png')
+				.setColor(0xFF1801)
+				.setTitle(`${response.season} F1 ${response.raceName} Qualifying ${postedQualifying}`)
+				.setDescription(`At ${response.Circuit.circuitName} on ${response.date}.`)
+				.addField("Qualifying Results", `\`\`\`${resultsText}\`\`\``, false)
+				.setFooter(`Information provided by Ergast`)
+				.setThumbnail("")
 
-			//Next, add driver's name
-			resultsRow += `${response.QualifyingResults[i].Driver.givenName} ${response.QualifyingResults[i].Driver.familyName} `
-
-			//Now, get the number of characters that are in the in the string, and subtract it from 30 to get number of spaces to add
-			let numSpacesNeeded = 30 - resultsRow.length;
-			//Now add the number of spaces needed.
-			for (numSpacesNeeded;numSpacesNeeded > 0;numSpacesNeeded--) {
-				resultsRow += ` `; //Add a single space
+			//Now send the information to all channels that have autoResults
+			for (const server in dbData.servers) {
+				client.channels.cache.get(dbData.servers[`${server}`]).send(raceEmbed);
 			}
-
-			//Finally, their time statistics
-			if (lastQualifying == 1) {
-				//Check if the driver did this Qualifying round
-				if (response.QualifyingResults[i]['Q1']) {
-					resultsRow += `${response.QualifyingResults[i]['Q1']}`;
-				}else {
-					resultsRow += `N/A`
-				}
-			}else if (lastQualifying == 2) {
-				//Check if the driver did this Qualifying round
-				if (response.QualifyingResults[i]['Q2']) {
-					resultsRow += `${response.QualifyingResults[i]['Q2']}`;
-				}else {
-					resultsRow += `N/A`
-				}
-			}else if (lastQualifying == 3) {
-				//Check if the driver did this Qualifying round
-				if (response.QualifyingResults[i]['Q3']) {
-					resultsRow += `${response.QualifyingResults[i]['Q3']}`;
-				}else {
-					resultsRow += `N/A`
-				}
-			}
-
-			//Add this row to results text, and repeat
-			resultsText += resultsRow + `\n`;
-		}
-
-		let raceEmbed = new Discord.MessageEmbed()
-			.setAuthor('F1 Steward','https://kimjammer.github.io/Portfolio/img/f1StewardLogo.png')
-			.setColor(0xFF1801)
-			.setTitle(`${response.season} F1 ${response.raceName} Qualifying ${lastQualifying}`)
-			.setDescription(`At ${response.Circuit.circuitName} on ${response.date}.`)
-			.addField("Qualifying Results", `\`\`\`${resultsText}\`\`\``, false)
-			.setFooter(`Information provided by Ergast`)
-			.setThumbnail("")
-
-		//Now send the information to all channels that have autoResults
-		for (const server in dbData.servers) {
-			client.channels.cache.get(dbData.servers[`${server}`]).send(raceEmbed);
 		}
 	});
 }
