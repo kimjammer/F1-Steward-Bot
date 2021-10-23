@@ -191,7 +191,10 @@ function checkNewQualsResults () {
 	let url = `http://ergast.com/api/f1/current/${parseInt(dbData.cache.lastQualifying[1],10)+1}/qualifying.json`;
 
 	tiny.get({url}, function (error, rawResponse) {
-		if (error) throw new Error(error);
+		if (error) {
+			console.log(error);
+			return;
+		};
 
 		//Response here
 		let response = rawResponse.body.MRData.RaceTable
