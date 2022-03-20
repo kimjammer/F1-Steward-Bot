@@ -31,13 +31,15 @@ if (!fs.existsSync(dirName)) {
 	dblocation = '../databases/botData.json'
 	//If the database doesn't exist, create it.
 	if (!fs.existsSync(dblocation)) {
+		const newYear = new Date().getFullYear();
 		fs.writeFileSync(dblocation,
 			JSON.stringify({
 			servers: {},
 			cache:
 				{
-					"lastRace":[],
-					"lastQualifying": []
+					"lastRace":[newYear.toString(),"0"],
+					"lastQualifying": [newYear.toString(),"0",3],
+					"lastSprint": [newYear.toString(),"0"]
 				}
 			}));
 	}
@@ -47,13 +49,15 @@ if (!fs.existsSync(dirName)) {
 	dblocation = '/dbs/f1bot/botData.json'
 	//If the database doesn't exist, create it.
 	if (!fs.existsSync(dblocation)) {
+		const newYear = new Date().getFullYear();
 		fs.writeFileSync(dblocation,
 			JSON.stringify({
 				servers: {},
 				cache:
 					{
-						"lastRace":[],
-						"lastQualifying": []
+						"lastRace":[newYear.toString(),"0"],
+						"lastQualifying": [newYear.toString(),"0",3],
+						"lastSprint": [newYear.toString(),"0"]
 					}
 			}));
 	}
@@ -78,12 +82,27 @@ client.on('ready', () => {
 	//When bot starts check for new results
 	checkNewRaceResults();
 	checkNewQualsResults();
+	checkNewSprintResults();
 });
 
 //Every Hour, Check for a new race result and if there is one, post it.
 systime.on('hour', () => {
 	checkNewRaceResults();
 	checkNewQualsResults();
+	checkNewSprintResults();
+});
+
+//When a new year starts, reset the database cache so it can handle the new f1 season.
+systime.on('year', () => {
+	let rawdbData = client.fs.readFileSync(client.dblocation);
+	let dbData = JSON.parse(rawdbData);
+	const newYear = new Date().getFullYear();
+	dbData.cache = {
+		"lastRace":[newYear.toString(),"0"],
+		"lastQualifying": [newYear.toString(),"0",3],
+		"lastSprint": [newYear.toString(),"0"]
+	}
+
 });
 
 function checkNewRaceResults () {
@@ -166,7 +185,7 @@ function checkNewRaceResults () {
 		}
 
 		let raceEmbed = new Discord.MessageEmbed()
-			.setAuthor('F1 Steward','https://kimjammer.github.io/Portfolio/img/f1StewardLogo.png')
+			.setAuthor('F1 Steward','https://kimjammer.com/Portfolio/img/f1StewardLogo.png')
 			.setColor(0xFF1801)
 			.setTitle(`${response.season} F1 ${response.raceName}`)
 			.setDescription(`At ${response.Circuit.circuitName} on ${response.date}.`)
@@ -188,7 +207,7 @@ function checkNewQualsResults () {
 
 	//I can't use /last/qualifying because that updates when the actual race happens. Instead, I check for the next round
 	//manually.
-	let url = `http://ergast.com/api/f1/current/${parseInt(dbData.cache.lastQualifying[1],10)+1}/qualifying.json`;
+	let url = `http://ergast.com/api/f1/${parseInt(dbData.cache.lastQualifying[0])}/${parseInt(dbData.cache.lastRace[1],10)+1}/qualifying.json`;
 
 	tiny.get({url}, function (error, rawResponse) {
 		if (error) {
@@ -293,7 +312,7 @@ function checkNewQualsResults () {
 			}
 
 			let raceEmbed = new Discord.MessageEmbed()
-				.setAuthor('F1 Steward','https://kimjammer.github.io/Portfolio/img/f1StewardLogo.png')
+				.setAuthor('F1 Steward','https://kimjammer.com/Portfolio/img/f1StewardLogo.png')
 				.setColor(0xFF1801)
 				.setTitle(`${response.season} F1 ${response.raceName} Qualifying ${postedQualifying}`)
 				.setDescription(`At ${response.Circuit.circuitName} on ${response.date}.`)
@@ -305,6 +324,112 @@ function checkNewQualsResults () {
 			for (const server in dbData.servers) {
 				client.channels.cache.get(dbData.servers[`${server}`]).send(raceEmbed);
 			}
+		}
+	});
+}
+
+function checkNewSprintResults () {
+	//Get Currently displayed race season & round
+	let rawdbData = client.fs.readFileSync(client.dblocation);
+	let dbData = JSON.parse(rawdbData);
+
+	//I can't use /last/qualifying because that updates when the actual race happens. Instead, I check for the next round
+	//manually.
+	let url = `http://ergast.com/api/f1/${parseInt(dbData.cache.lastSprint[0])}/${parseInt(dbData.cache.lastRace[1],10)+1}/sprint.json`;
+
+	tiny.get({url}, function (error, rawResponse) {
+		if (error) {
+			console.log(error);
+			return;
+		};
+
+		//Response here
+		let response = rawResponse.body.MRData.RaceTable
+
+		//If this round doesn't have a sprint race or if it hasn't happened yet, exit.
+		if (response.Races.length == 0){
+			return;
+		}
+
+		//If the latest race's season and round is the same as the one stored, escape function
+		if (response.season == dbData.cache.lastSprint[0] && response["round"] == dbData.cache.lastSprint[1]) {
+			return;
+		}
+
+		//If the code got to here, it means that there is new information available on the website.
+		//Save the new latest season and round
+		dbData.cache.lastSprint = [response.season, response["round"]];
+		let dbDataToWrite = JSON.stringify(dbData);
+		client.fs.writeFileSync(client.dblocation,dbDataToWrite);
+
+		//Narrow down definition of response so that it is only the specific race information
+		response = response.Races[0];
+
+		//Construct block of text that has all drivers and their times in rows.
+		let resultsText = ``;
+		let resultsRow = ``;
+		for (let i = 0;i < response.SprintResults.length; i++) {
+			resultsRow = ``;
+			//Check if current driver has a ending place or has retired. Then add their place to the string.
+			if (response.SprintResults[i].positionText == "R") {
+				//Say driver has retired instead of giving place number
+				resultsRow += `Retired. `;
+			}else if (response.SprintResults[i].positionText == "W") {
+				//Say driver has retired instead of giving place number
+				resultsRow += `Withdrawn. `;
+			}else if (response.SprintResults[i].positionText == "N") {
+				resultsRow += `Not Classifed. `
+			}else{
+				//If writing results for 1st, 2nd, or 3rd, don't use -th ending.
+				if (i == 0) {
+					resultsRow += `1st. `
+				}else if (i == 1) {
+					resultsRow += `2nd. `
+				} else if (i == 2) {
+					resultsRow += `3rd. `
+				}else {
+					resultsRow += `${response.SprintResults[i].positionText}th. `
+				}
+			}
+
+			//Next, add driver's name
+			resultsRow += `${response.SprintResults[i].Driver.givenName} ${response.SprintResults[i].Driver.familyName} `
+
+			//Now, get the number of characters that are in the in the string, and subtract it from 30 to get number of spaces to add
+			let numSpacesNeeded = 30 - resultsRow.length;
+			//Now add the number of spaces needed.
+			for (numSpacesNeeded;numSpacesNeeded > 0;numSpacesNeeded--) {
+				resultsRow += ` `; //Add a single space
+			}
+
+			//Finally, their time statistics
+			if (response.SprintResults[i][`status`] == "Finished") {
+				//If they finished all laps, then add lap time/time behind 1st place
+				resultsRow += `${response.SprintResults[i].Time[`time`]}`;
+			}else if (response.SprintResults[i][`status`].charAt(0) == "+") {
+				//If they were lapped, (indicated by their status being +1 lap, +2 laps, etc), then add their lapped status
+				resultsRow += `${response.SprintResults[i][`status`]}`;
+			}else {
+				//In this case, they had a specific problem with something
+				resultsRow += `Problem - ${response.SprintResults[i][`status`]}`;
+			}
+
+			//Add this row to results text, and repeat
+			resultsText += resultsRow + `\n`;
+		}
+
+		let raceEmbed = new Discord.MessageEmbed()
+			.setAuthor('F1 Steward','https://kimjammer.com/Portfolio/img/f1StewardLogo.png')
+			.setColor(0xFF1801)
+			.setTitle(`${response.season} F1 ${response.raceName} Sprint Race`)
+			.setDescription(`At ${response.Circuit.circuitName} on ${response.date}.`)
+			.addField("Results", `\`\`\`${resultsText}\`\`\``, false)
+			.setFooter(`Information provided by Ergast`)
+			.setThumbnail("")
+
+		//Now send the information to all channels that have autoResults
+		for (const server in dbData.servers) {
+			client.channels.cache.get(dbData.servers[`${server}`]).send(raceEmbed);
 		}
 	});
 }

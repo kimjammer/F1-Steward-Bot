@@ -100,7 +100,7 @@ module.exports = {
 			}
 
 			let raceEmbed = new client.MessageEmbed()
-				.setAuthor('F1 Steward','https://kimjammer.github.io/Portfolio/img/f1StewardLogo.png')
+				.setAuthor('F1 Steward','https://kimjammer.com/Portfolio/img/f1StewardLogo.png')
 				.setColor(0xFF1801)
 				.setTitle(`${response.season} F1 ${response.raceName}`)
 				.setDescription(`At ${response.Circuit.circuitName} on ${response.date}.`)

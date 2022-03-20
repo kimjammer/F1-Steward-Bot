@@ -16,7 +16,7 @@ module.exports = {
 			let dbDataToWrite = JSON.stringify(dbData);
 			client.fs.writeFile(client.dblocation,dbDataToWrite, (err) => {
 				if (err) throw err;
-				message.channel.send(`This channel, <#${dbData.servers[`${message.guild.id}`]}>, has been set to automatically race results!`);
+				message.channel.send(`This channel, <#${dbData.servers[`${message.guild.id}`]}>, has been set to automatically recieve race results!`);
 			});
 		}else if (args[0] == "remove") {
 			//Delete the property:value pair from the database.

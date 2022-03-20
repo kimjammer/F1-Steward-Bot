@@ -21,7 +21,7 @@ module.exports = {
         Boosts:  ${crr_guild.premiumSubscriptionCount}`
 
         const embed = new client.MessageEmbed() //this is Discord.MessageEmbed but put into client for easy access
-            .setAuthor('F1 Steward','https://kimjammer.github.io/Portfolio/img/f1StewardLogo.png')
+            .setAuthor('F1 Steward','https://kimjammer.com/Portfolio/img/f1StewardLogo.png')
             .setColor(0x003ea1)
             .setTitle(`Information about ${crr_guild}`)
             .addField("General Info", guild_general_info, false)

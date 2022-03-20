@@ -1,11 +1,11 @@
 {
   "name": "f1-steward-bot",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A Discord bot that automatically posts F1 results, along with other commands.",
   "main": "main.js",
   "repository": {
     "type": "git",
-    "url": "PUTURLHERE"
+    "url": "https://github.com/kimjammer/F1-Steward-Bot"
   },
   "scripts": {
     "start": "node main.js",
