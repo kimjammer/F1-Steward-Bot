@@ -29,7 +29,6 @@ module.exports = {
 			});
 		}else {
 			message.channel.send("Please say \`<autoResults set\` to make this channel get automatic results or \`<autoResults remove\` to stop getting automatic results.");
-			return;
 		}
 	}
 };

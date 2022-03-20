@@ -38,15 +38,15 @@ module.exports = {
 			})
 
 			const helpEmbed = new client.MessageEmbed()
-				.setAuthor('F1 Steward','https://kimjammer.com/Portfolio/img/f1StewardLogo.png')
+				.setAuthor({name:'F1 Steward',iconURL:'https://kimjammer.com/Portfolio/img/f1StewardLogo.png'})
 				.setColor(0x03fc30)
 				.setTitle(`Help Menu`)
 				.addField("General Commands:", "Press :regional_indicator_g:", false)
 				.addField("Fun Commands", "Press: :regional_indicator_f:", false)
-				.setFooter("Menu will deactivate after 20 seconds. In that case, run \`<help\` again.")
+				.setFooter({text:"Menu will deactivate after 20 seconds. In that case, run \`<help\` again."})
 
 			//send embed and wait for response.
-			const menu =  await message.channel.send(helpEmbed);
+			const menu =  await message.channel.send({embeds:[helpEmbed]});
 
 			//React to the message and create the buttons
 			await menu.react('🇬');
@@ -105,14 +105,14 @@ module.exports = {
 
 				//Create new embed with information about the requested command
 				const commandEmbed = new client.MessageEmbed()
-					.setAuthor('F1 Steward','https://kimjammer.com/Portfolio/img/f1StewardLogo.png')
+					.setAuthor({name:'F1 Steward',iconURL:'https://kimjammer.com/Portfolio/img/f1StewardLogo.png'})
 					.setColor(0x03fc30)
 					.setTitle(client.commands.get(args[0]).name)
 					.addField(`Description:`, client.commands.get(args[0]).description, false)
 					.addField(`Usage:`, `\`${client.commands.get(args[0]).usage}\``, false)
 					.addField(`Only usable in servers?`, `${serverOnlyTxt}`,false)
 
-				message.channel.send(commandEmbed);
+				message.channel.send({embeds:[commandEmbed]});
 			}else{
 				reply = "That command doesn't exist!"
 				message.channel.send(reply);

@@ -1,6 +1,6 @@
 {
   "name": "f1-steward-bot",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A Discord bot that automatically posts F1 results, along with other commands.",
   "main": "main.js",
   "repository": {
@@ -12,9 +12,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "discord.js": "^12.5.1",
+    "discord.js": "^13.6.0",
     "systime": "^1.0.0",
-    "tiny-json-http": "^7.3.0"
+    "tiny-json-http": "^7.4.2"
   },
   "keywords": [
     "Bot"

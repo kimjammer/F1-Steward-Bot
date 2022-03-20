@@ -21,15 +21,15 @@ module.exports = {
         Boosts:  ${crr_guild.premiumSubscriptionCount}`
 
         const embed = new client.MessageEmbed() //this is Discord.MessageEmbed but put into client for easy access
-            .setAuthor('F1 Steward','https://kimjammer.com/Portfolio/img/f1StewardLogo.png')
+            .setAuthor({name:'F1 Steward',iconURL:'https://kimjammer.com/Portfolio/img/f1StewardLogo.png'})
             .setColor(0x003ea1)
             .setTitle(`Information about ${crr_guild}`)
             .addField("General Info", guild_general_info, false)
             .addField("Channel Count", guild_channels_info, false)
             .addField("Nitro Info", guild_nitro_info, false)
-            .setFooter(`Information fetched on: ${date_obj.toDateString()}`,crr_guild.iconURL())
+            .setFooter({text:`Information fetched on: ${date_obj.toDateString()}`,iconURL: crr_guild.iconURL()})
             .setThumbnail(crr_guild.iconURL())
 
-        message.channel.send(embed);
+        message.channel.send({embeds:[embed]});
     }
 };

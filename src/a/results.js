@@ -100,16 +100,16 @@ module.exports = {
 			}
 
 			let raceEmbed = new client.MessageEmbed()
-				.setAuthor('F1 Steward','https://kimjammer.com/Portfolio/img/f1StewardLogo.png')
+				.setAuthor({name:'F1 Steward',iconURL:'https://kimjammer.com/Portfolio/img/f1StewardLogo.png'})
 				.setColor(0xFF1801)
 				.setTitle(`${response.season} F1 ${response.raceName}`)
 				.setDescription(`At ${response.Circuit.circuitName} on ${response.date}.`)
 				.addField("Results", `\`\`\`${resultsText}\`\`\``, false)
-				.setFooter(`Information provided by Ergast`)
+				.setFooter({text:`Information provided by Ergast`})
 				.setThumbnail("")
 
 			//Now send the information
-			message.channel.send(raceEmbed);
+			message.channel.send({embeds:[raceEmbed]});
 		});
 	}
 };

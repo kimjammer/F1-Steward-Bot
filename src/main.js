@@ -1,9 +1,9 @@
-const Discord = require('discord.js');
-const client = new Discord.Client();
+const {Client, Intents, MessageAttachment, MessageEmbed, ReactionCollector} = require('discord.js');
+const client = new Client({intents: [Intents.FLAGS.GUILDS,Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, Intents.FLAGS.GUILD_INTEGRATIONS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES,Intents.FLAGS.DIRECT_MESSAGE_REACTIONS]});
 
-client.attachment = Discord.MessageAttachment;
-client.MessageEmbed = Discord.MessageEmbed;
-client.ReactionCollector = Discord.ReactionCollector;
+client.attachment = MessageAttachment;
+client.MessageEmbed = MessageEmbed;
+client.ReactionCollector = ReactionCollector;
 
 //Your(the bot creator's) user ID here. Only used for debug mode.
 const botAuthor = "424546246980665344"
@@ -28,7 +28,7 @@ let dirName = path.dirname(dblocation);
 if (!fs.existsSync(dirName)) {
 	console.log("Running on basic Node.js detected.")
 	//Now check if the file exists at predicted node location
-	dblocation = '../databases/botData.json'
+	dblocation = path.join(__dirname,'..','databases','botData.json')
 	//If the database doesn't exist, create it.
 	if (!fs.existsSync(dblocation)) {
 		const newYear = new Date().getFullYear();
@@ -46,7 +46,7 @@ if (!fs.existsSync(dirName)) {
 }else{
 	console.log("Running in docker detected.");
 	//Now check if the file exists at the predicted docker location
-	dblocation = '/dbs/f1bot/botData.json'
+	dblocation = path.dirname('/dbs/f1bot/botData.json');
 	//If the database doesn't exist, create it.
 	if (!fs.existsSync(dblocation)) {
 		const newYear = new Date().getFullYear();
@@ -69,7 +69,7 @@ const {token} = require('./config.json');
 const prefix = "<";
 
 client.commands = new Map();
-const commandFiles = fs.readdirSync('./a').filter(file => file.endsWith('.js'));
+const commandFiles = fs.readdirSync(path.join(__dirname,'a')).filter(file => file.endsWith('.js'));
 for (const file of commandFiles) {
 	const command = require(`./a/${file}`);
 	client.commands.set(command.name.toLowerCase(), command);
@@ -184,18 +184,17 @@ function checkNewRaceResults () {
 			resultsText += resultsRow + `\n`;
 		}
 
-		let raceEmbed = new Discord.MessageEmbed()
-			.setAuthor('F1 Steward','https://kimjammer.com/Portfolio/img/f1StewardLogo.png')
+		let raceEmbed = new client.MessageEmbed()
+			.setAuthor({name:'F1 Steward',iconURL:'https://kimjammer.com/Portfolio/img/f1StewardLogo.png'})
 			.setColor(0xFF1801)
 			.setTitle(`${response.season} F1 ${response.raceName}`)
 			.setDescription(`At ${response.Circuit.circuitName} on ${response.date}.`)
 			.addField("Results", `\`\`\`${resultsText}\`\`\``, false)
-			.setFooter(`Information provided by Ergast`)
-			.setThumbnail("")
+			.setFooter({text:`Information provided by Ergast`})
 
 		//Now send the information to all channels that have autoResults
 		for (const server in dbData.servers) {
-			client.channels.cache.get(dbData.servers[`${server}`]).send(raceEmbed);
+			client.channels.cache.get(dbData.servers[`${server}`]).send({embeds:[raceEmbed]});
 		}
 	});
 }
@@ -213,7 +212,7 @@ function checkNewQualsResults () {
 		if (error) {
 			console.log(error);
 			return;
-		};
+		}
 
 		//Response here
 		let response = rawResponse.body.MRData.RaceTable
@@ -276,7 +275,7 @@ function checkNewQualsResults () {
 				//Next, add driver's name
 				resultsRow += `${response.QualifyingResults[i].Driver.givenName} ${response.QualifyingResults[i].Driver.familyName} `
 
-				//Now, get the number of characters that are in the in the string, and subtract it from 30 to get number of spaces to add
+				//Now, get the number of characters that are in the string, and subtract it from 30 to get number of spaces to add
 				let numSpacesNeeded = 30 - resultsRow.length;
 				//Now add the number of spaces needed.
 				for (numSpacesNeeded;numSpacesNeeded > 0;numSpacesNeeded--) {
@@ -311,18 +310,18 @@ function checkNewQualsResults () {
 				resultsText += resultsRow + `\n`;
 			}
 
-			let raceEmbed = new Discord.MessageEmbed()
-				.setAuthor('F1 Steward','https://kimjammer.com/Portfolio/img/f1StewardLogo.png')
+			let raceEmbed = new client.MessageEmbed()
+				.setAuthor({name:'F1 Steward',iconURL:'https://kimjammer.com/Portfolio/img/f1StewardLogo.png'})
 				.setColor(0xFF1801)
 				.setTitle(`${response.season} F1 ${response.raceName} Qualifying ${postedQualifying}`)
 				.setDescription(`At ${response.Circuit.circuitName} on ${response.date}.`)
 				.addField("Qualifying Results", `\`\`\`${resultsText}\`\`\``, false)
-				.setFooter(`Information provided by Ergast`)
+				.setFooter({text:`Information provided by Ergast`})
 				.setThumbnail("")
 
 			//Now send the information to all channels that have autoResults
 			for (const server in dbData.servers) {
-				client.channels.cache.get(dbData.servers[`${server}`]).send(raceEmbed);
+				client.channels.cache.get(dbData.servers[`${server}`]).send({embeds:[raceEmbed]});
 			}
 		}
 	});
@@ -341,7 +340,7 @@ function checkNewSprintResults () {
 		if (error) {
 			console.log(error);
 			return;
-		};
+		}
 
 		//Response here
 		let response = rawResponse.body.MRData.RaceTable
@@ -418,18 +417,18 @@ function checkNewSprintResults () {
 			resultsText += resultsRow + `\n`;
 		}
 
-		let raceEmbed = new Discord.MessageEmbed()
-			.setAuthor('F1 Steward','https://kimjammer.com/Portfolio/img/f1StewardLogo.png')
+		let raceEmbed = new client.MessageEmbed()
+			.setAuthor({name:'F1 Steward',iconURL:'https://kimjammer.com/Portfolio/img/f1StewardLogo.png'})
 			.setColor(0xFF1801)
 			.setTitle(`${response.season} F1 ${response.raceName} Sprint Race`)
 			.setDescription(`At ${response.Circuit.circuitName} on ${response.date}.`)
 			.addField("Results", `\`\`\`${resultsText}\`\`\``, false)
-			.setFooter(`Information provided by Ergast`)
+			.setFooter({text:`Information provided by Ergast`})
 			.setThumbnail("")
 
 		//Now send the information to all channels that have autoResults
 		for (const server in dbData.servers) {
-			client.channels.cache.get(dbData.servers[`${server}`]).send(raceEmbed);
+			client.channels.cache.get(dbData.servers[`${server}`]).send({embeds:[raceEmbed]});
 		}
 	});
 }
