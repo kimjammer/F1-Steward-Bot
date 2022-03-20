@@ -46,7 +46,7 @@ if (!fs.existsSync(dirName)) {
 }else{
 	console.log("Running in docker detected.");
 	//Now check if the file exists at the predicted docker location
-	dblocation = path.dirname('/dbs/f1bot/botData.json');
+	dblocation = path.join('/dbs/f1bot/botData.json');
 	//If the database doesn't exist, create it.
 	if (!fs.existsSync(dblocation)) {
 		const newYear = new Date().getFullYear();
