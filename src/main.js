@@ -80,16 +80,25 @@ client.on('ready', () => {
 	client.user.setActivity("<help",{type: "LISTENING"});
 
 	//When bot starts check for new results
-	checkNewRaceResults();
-	checkNewQualsResults();
-	checkNewSprintResults();
+	try {
+		checkNewRaceResults();
+		checkNewQualsResults();
+		checkNewSprintResults();
+	}catch(e) {
+		console.log(e)
+	}
+	
 });
 
 //Every Hour, Check for a new race result and if there is one, post it.
 systime.on('hour', () => {
-	checkNewRaceResults();
-	checkNewQualsResults();
-	checkNewSprintResults();
+	try {
+		checkNewRaceResults();
+		checkNewQualsResults();
+		checkNewSprintResults();
+	}catch(e) {
+		console.log(e)
+	}
 });
 
 //When a new year starts, reset the database cache so it can handle the new f1 season.
