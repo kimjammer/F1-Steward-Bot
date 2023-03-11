@@ -10,6 +10,8 @@ If you want to run this yourself, do this:
 
 {
   "token": "DiscordBotToken",
+  "guildId": "TestServerId",
+  "clientId": "DiscordBotClientId"
 }
 
 3. You have two option to run: go to src and run "npm install" and then"node main.js" or go to src and run "docker-compose up".
