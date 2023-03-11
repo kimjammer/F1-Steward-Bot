@@ -1,12 +1,15 @@
-const {Client, Intents, MessageAttachment, MessageEmbed, ReactionCollector} = require('discord.js');
-const client = new Client({intents: [Intents.FLAGS.GUILDS,Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, Intents.FLAGS.GUILD_INTEGRATIONS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES,Intents.FLAGS.DIRECT_MESSAGE_REACTIONS]});
+const {Client, IntentsBitField, MessageAttachment, ReactionCollector, Events, EmbedBuilder} = require('discord.js');
+
+const myIntents = new IntentsBitField();
+myIntents.add(IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildEmojisAndStickers, IntentsBitField.Flags.GuildIntegrations, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.GuildMessageReactions, IntentsBitField.Flags.DirectMessages, IntentsBitField.Flags.DirectMessageReactions);
+const client = new Client({intents: myIntents});
 
 client.attachment = MessageAttachment;
-client.MessageEmbed = MessageEmbed;
+client.EmbedBuilder = EmbedBuilder;
 client.ReactionCollector = ReactionCollector;
 
-//Your(the bot creator's) user ID here. Only used for debug mode.
-const botAuthor = "424546246980665344"
+const regCmds = require('./deployCommands.js');
+regCmds.run(true);
 
 const tiny = require('tiny-json-http');
 client.tiny = tiny // Moving tiny module into client for easy access.
@@ -66,7 +69,6 @@ if (!fs.existsSync(dirName)) {
 client.dblocation = dblocation;
 
 const {token} = require('./config.json');
-const prefix = "<";
 
 client.commands = new Map();
 const commandFiles = fs.readdirSync(path.join(__dirname,'a')).filter(file => file.endsWith('.js'));
@@ -77,7 +79,7 @@ for (const file of commandFiles) {
 
 client.on('ready', () => {
 	console.log('F1 Steward is online');
-	client.user.setActivity("<help",{type: "LISTENING"});
+	client.user.setActivity("the cars race by",{type: "LISTENING"});
 
 	//When bot starts check for new results
 	try {
@@ -186,7 +188,7 @@ function checkNewRaceResults () {
 			//Next, add driver's name
 			resultsRow += `${response.Results[i].Driver.givenName} ${response.Results[i].Driver.familyName} `
 
-			//Now, get the number of characters that are in the in the string, and subtract it from 30 to get number of spaces to add
+			//Now, get the number of characters that are in the string, and subtract it from 30 to get number of spaces to add
 			let numSpacesNeeded = 30 - resultsRow.length;
 			//Now add the number of spaces needed.
 			for (numSpacesNeeded;numSpacesNeeded > 0;numSpacesNeeded--) {
@@ -209,12 +211,11 @@ function checkNewRaceResults () {
 			resultsText += resultsRow + `\n`;
 		}
 
-		let raceEmbed = new client.MessageEmbed()
-			.setAuthor({name:'F1 Steward',iconURL:'https://kimjammer.com/Portfolio/img/f1StewardLogo.png'})
+		let raceEmbed = new client.EmbedBuilder()
+			.setAuthor({ name: 'F1 Steward Bot', iconURL: 'https://www.kimjammer.com/Portfolio/img/f1StewardLogo.png', url: 'https://www.kimjammer.com' })
 			.setColor(0xFF1801)
 			.setTitle(`${response.season} F1 ${response.raceName}`)
-			.setDescription(`At ${response.Circuit.circuitName} on ${response.date}.`)
-			.addField("Results", `\`\`\`${resultsText}\`\`\``, false)
+			.addFields({name:"Results", value:`\`\`\`${resultsText}\`\`\``, inline: false})
 			.setFooter({text:`Information provided by Ergast`})
 
 		//Now send the information to all channels that have autoResults
@@ -340,14 +341,13 @@ function checkNewQualsResults () {
 				resultsText += resultsRow + `\n`;
 			}
 
-			let raceEmbed = new client.MessageEmbed()
-				.setAuthor({name:'F1 Steward',iconURL:'https://kimjammer.com/Portfolio/img/f1StewardLogo.png'})
+			let raceEmbed = new client.EmbedBuilder()
+				.setAuthor({ name: 'F1 Steward Bot', iconURL: 'https://www.kimjammer.com/Portfolio/img/f1StewardLogo.png', url: 'https://www.kimjammer.com' })
 				.setColor(0xFF1801)
 				.setTitle(`${response.season} F1 ${response.raceName} Qualifying ${postedQualifying}`)
 				.setDescription(`At ${response.Circuit.circuitName} on ${response.date}.`)
-				.addField("Qualifying Results", `\`\`\`${resultsText}\`\`\``, false)
+				.addFields({name:"Results", value:`\`\`\`${resultsText}\`\`\``, inline: false})
 				.setFooter({text:`Information provided by Ergast`})
-				.setThumbnail("")
 
 			//Now send the information to all channels that have autoResults
 			for (const server in dbData.servers) {
@@ -364,7 +364,7 @@ function checkNewSprintResults () {
 
 	//I can't use /last/qualifying because that updates when the actual race happens. Instead, I check for the next round
 	//manually.
-	let url = `http://ergast.com/api/f1/${parseInt(dbData.cache.lastSprint[0])}/${parseInt(dbData.cache.lastRace[1],10)+1}/sprint.json`;
+	let url = `https://ergast.com/api/f1/${parseInt(dbData.cache.lastSprint[0])}/${parseInt(dbData.cache.lastRace[1],10)+1}/sprint.json`;
 
 	tiny.get({url}, function (error, rawResponse) {
 		if (error) {
@@ -452,14 +452,13 @@ function checkNewSprintResults () {
 			resultsText += resultsRow + `\n`;
 		}
 
-		let raceEmbed = new client.MessageEmbed()
-			.setAuthor({name:'F1 Steward',iconURL:'https://kimjammer.com/Portfolio/img/f1StewardLogo.png'})
+		let raceEmbed = new client.EmbedBuilder()
+			.setAuthor({ name: 'F1 Steward Bot', iconURL: 'https://www.kimjammer.com/Portfolio/img/f1StewardLogo.png', url: 'https://www.kimjammer.com' })
 			.setColor(0xFF1801)
 			.setTitle(`${response.season} F1 ${response.raceName} Sprint Race`)
 			.setDescription(`At ${response.Circuit.circuitName} on ${response.date}.`)
-			.addField("Results", `\`\`\`${resultsText}\`\`\``, false)
+			.addFields({name:"Results", value:`\`\`\`${resultsText}\`\`\``, inline: false})
 			.setFooter({text:`Information provided by Ergast`})
-			.setThumbnail("")
 
 		//Now send the information to all channels that have autoResults
 		for (const server in dbData.servers) {
@@ -468,44 +467,27 @@ function checkNewSprintResults () {
 	});
 }
 
-client.on('message',message => {
+//Respond to slash commands
+client.on(Events.InteractionCreate, async interaction => {
+	if (!interaction.isChatInputCommand()) return;
 
-	if (!message.content.startsWith(prefix) || message.author.bot) return;
+	const command = interaction.client.commands.get(interaction.commandName);
 
-	let msgContents = message.content.slice(prefix.length).split(/ +/);
-	let commandName = msgContents.shift().toLowerCase();
-	let command = client.commands.get(commandName);
-	let args = msgContents.map(element => {
-			return element.toLowerCase();
-	});
-
-	let reply = ''
-
-	if (!client.commands.has(commandName)) return;
-
-	if (command.guildOnly && !message.guild) { //If command is guild only and there is no guild that the message was sent from. (Direct message)
-		message.channel.send("You can only use this command in a server.");
+	if (!command) {
+		console.error(`No command matching ${interaction.commandName} was found.`);
 		return;
 	}
 
-	//if the last argument is debug, and the sender is the bot's creator, do debug things
-	client.debugMode = false;
-	if (args[args.length - 1] == "debug") {
-		if (message.author.id == botAuthor) {
-			client.debugMode = true;
-		}else{
-			message.channel.send(`Debug Mode Access Denied.`)
+	try {
+		await command.execute(interaction);
+	} catch (error) {
+		console.error(error);
+		if (interaction.replied || interaction.deferred) {
+			await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+		} else {
+			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 		}
 	}
-
-	try {
-		command.execute(message,args,client); //message is the message object so the code can call message.channel.send() or etc
-	}catch(err){
-		console.log(err);
-		reply = 'Something went wrong. :('
-		message.channel.send(reply);
-	}
-
 });
 
 systime.start()
