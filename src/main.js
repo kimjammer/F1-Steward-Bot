@@ -9,7 +9,7 @@ client.EmbedBuilder = EmbedBuilder;
 client.ReactionCollector = ReactionCollector;
 
 const regCmds = require('./deployCommands.js');
-regCmds.run(true);
+regCmds.run(false);
 
 const tiny = require('tiny-json-http');
 client.tiny = tiny // Moving tiny module into client for easy access.
