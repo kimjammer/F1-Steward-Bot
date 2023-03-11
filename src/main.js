@@ -102,7 +102,8 @@ systime.on('hour', () => {
 });
 
 //When a new year starts, reset the database cache so it can handle the new f1 season.
-systime.on('year', () => {
+const resetDatabaseCache = () => {
+	console.log("Resetting database cache.");
 	let rawdbData = client.fs.readFileSync(client.dblocation);
 	let dbData = JSON.parse(rawdbData);
 	const newYear = new Date().getFullYear();
@@ -111,19 +112,34 @@ systime.on('year', () => {
 		"lastQualifying": [newYear.toString(),"0",3],
 		"lastSprint": [newYear.toString(),"0"]
 	}
-
+	fs.writeFileSync(client.dblocation, JSON.stringify(dbData));
+}
+if (JSON.parse(client.fs.readFileSync(client.dblocation)).cache.lastRace[0] != new Date().getFullYear().toString()) {
+	resetDatabaseCache();
+}
+systime.on('year', () => {
+	resetDatabaseCache();
 });
 
 function checkNewRaceResults () {
 	let url = "http://ergast.com/api/f1/current/last/results.json";
 
 	tiny.get({url}, function (error, rawResponse) {
-		if (error) throw new Error(error);
+		if (error) {
+			console.log(error);
+			return;
+		}
 
 		//Response here
 		//Get Currently displayed race season & round
 		let rawdbData = client.fs.readFileSync(client.dblocation);
 		let dbData = JSON.parse(rawdbData);
+
+		//Ensure the body isn't undefined
+		if (rawResponse.body.MRData === undefined) {
+			console.log("Failed to get data.");
+			return;
+		}
 
 		let response = rawResponse.body.MRData.RaceTable
 		//If the latest race's season and round is the same as the one stored, escape function
@@ -224,6 +240,11 @@ function checkNewQualsResults () {
 		}
 
 		//Response here
+		//Ensure the body isn't undefined
+		if (rawResponse.body.MRData === undefined) {
+			console.log("Failed to get data.");
+			return;
+		}
 		let response = rawResponse.body.MRData.RaceTable
 
 		//Get the latest Qualifying round completed.
@@ -352,6 +373,11 @@ function checkNewSprintResults () {
 		}
 
 		//Response here
+		//Ensure the body isn't undefined
+		if (rawResponse.body.MRData === undefined) {
+			console.log("Failed to get data.");
+			return;
+		}
 		let response = rawResponse.body.MRData.RaceTable
 
 		//If this round doesn't have a sprint race or if it hasn't happened yet, exit.
